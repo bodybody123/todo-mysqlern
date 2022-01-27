@@ -54,7 +54,7 @@ export default class TodoController {
     static async createTodo(req, res, next) {
         try{
             upload(req, res, error => {
-                const file = req.file ? req.file.filename : '';
+                const file = req.file ? req.file.filename : 'demo.jpg';
                 const text = req.body.text;
                 conn.query(
                     {
@@ -75,17 +75,27 @@ export default class TodoController {
     }
 
     static async updateTodo(req, res) {
-        conn.query(
-            {
-                sql: 'UPDATE todo SET `text` = ?, updated_at = current_time() WHERE `id` = ?',
-                values: [req.body.text, req.body.id]
-            },
-            (err, results, fields) => {
-                if (err) throw err;
+        try{
 
-                res.json('success updated')
+            const file = req.file ? req.file.filename : req.body.file;
+            const text = req.body.text;
+            const id = req.body.id;
+
+            conn.query(
+                {
+                    sql: 'UPDATE todo SET `image` = ?, `text` = ?, updated_at = current_time() WHERE `id` = ?',
+                    values: [file, text, id]
+                },
+                (err, results, fields) => {
+                    if (err) throw err;
+
+                    res.json('success updated')
+                }
+                )
             }
-            )
+        catch(e) {
+            res.status(500).json({ error: e });
+        }
         }
         
     static async deleteTodo(req, res) {
