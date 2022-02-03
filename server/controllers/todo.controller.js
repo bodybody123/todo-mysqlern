@@ -1,6 +1,7 @@
 import conn from '../db/connection.js';
 import multer from 'multer';
 import path from 'path';
+import { unlink } from 'fs';
 
 const __dirname = path.resolve();
 
@@ -101,12 +102,25 @@ export default class TodoController {
     static async deleteTodo(req, res) {
         conn.query(
             {
+                sql: 'SELECT image FROM todo WHERE id = ?',
+                values: [req.params.id]
+            },
+            (err, results, fields) => {
+                if (err) throw err;
+                unlink(__dirname + '/public/uploads/' + results[0].image, (err) => {
+                    if (err) throw err;
+                    console.log('file was deleted');
+                })
+            }
+        )
+        conn.query(
+            {
                 sql: 'DELETE FROM `todo` WHERE `id` = ?',
                 values: [req.params.id]
             },
             (err, results, fields) => {
                 if (err) throw err;
-    
+                
                 res.json('success deleted')
             }
         )
