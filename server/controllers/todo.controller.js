@@ -5,9 +5,21 @@ import { unlink } from "fs";
 import imagemin from "imagemin";
 import imageminmozjpeg from "imagemin-mozjpeg";
 import imageminPngquant from "imagemin-pngquant";
+import glob from "fast-glob";
 
 const __dirname = path.resolve();
 function mini() {
+  const entries = glob.sync("./public/uploads/min/*");
+  const non_entries = glob.sync("./public/uploads/*");
+  non_entries.map((real) => {
+    entries.map((minified) => {
+      if (path.basename(minified) === path.basename(real)) {
+        unlink(__dirname + "/public/uploads/" + path.basename(real), (err) => {
+          if (err) throw err;
+        });
+      }
+    });
+  });
   imagemin(["./public/uploads/*.{jpg,png}"], {
     destination: "./public/uploads/min",
     plugins: [
@@ -20,6 +32,7 @@ function mini() {
     ],
   });
 }
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./public/uploads/");
